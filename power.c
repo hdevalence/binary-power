@@ -79,7 +79,7 @@ uint32_t binary_exp_asm(uint32_t x, uint32_t a, uint32_t p)
 }
 #endif
 
-int main(int argc, char** argv)
+int __attribute__((optimize("O0"))) main(int argc, char** argv)
 {
 	uint32_t x = atoi(argv[1]);
 	uint32_t a = atoi(argv[2]);
