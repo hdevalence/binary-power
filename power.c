@@ -39,58 +39,16 @@ uint32_t binary_exp_c(uint32_t x, uint32_t a, uint32_t p)
 	return (r*y) % p;
 }
 
-#if 0
-/*
- * ARM assembler implementation of binary_exp_c.
- */
-uint32_t binary_exp_asm(uint32_t x, uint32_t a, uint32_t p)
-{
-	uint32_t r, tmp_div;
-	__asm__ __volatile__(
-	"mov	%[r], #1"		"\n\t" /* Set r = 1 */
-	"binary_exp_loop:"		"\n\t" /* Begin loop */
-	"cmp	%[a], #1"		"\n\t" /* if a <= 1, end */
-	"ble	loop_end"		"\n\t" 
-	"tst	%[a], #1"		"\n\t" /* If a odd then */
-	"beq	skip_odd"		"\n\t"
-	"mul	%[r], %[r], %[x]"	"\n\t"
-	"udiv	%[td], %[r], %[p]"	"\n\t"
-	"mls	%[r], %[td], %[p],%[r]"	"\n\t" /* r *= x mod p */
-	"skip_odd:"			"\n\t"
-	"mul	%[x], %[x], %[x]"	"\n\t"
-	"udiv	%[td], %[x], %[p]"	"\n\t"
-	"mls	%[x], %[td], %[p],%[x]"	"\n\t" /* x *= x mod p */
-	"lsrs	%[a], %[a], #1"		"\n\t" /* divide exp by 2 */
-	"beq	loop_end"		"\n\t" /* break if exp=0 */
-	"b	binary_exp_loop"	"\n\t"
-	"loop_end:"			"\n\t"
-	"mul	%[x], %[r], %[x]"	"\n\t"
-	"udiv	%[td], %[x], %[p]"	"\n\t"
-	"mls	%[x], %[td], %[p],%[x]"	"\n\t" /* x *= r mod p */
-	: [x]"=r"(x), 
-	  [a]"=r"(a),
-	  [r]"=r"(r),
-	  [td]"=r"(tmp_div)
-	: "0"(x),
-	  "1"(a),
-	  [p]"r"(p)
-	: "cc");
-	return x;
-}
-#endif
-
 int __attribute__((optimize("O0"))) main(int argc, char** argv)
 {
 	uint32_t x = atoi(argv[1]);
 	uint32_t a = atoi(argv[2]);
 	uint32_t p = atoi(argv[3]);
+    uint32_t y;
 	for(int i = 0; i < 100000000; ++i) {
-		binary_exp_c(x,a,p);
+		y = binary_exp_c(x,a,p);
 	}
-    /*
-	printf("%d\n", binary_exp_c(x,a,p));
-	printf("%d\n", binary_exp_asm(x,a,p));
-    */
+    printf("%d^%d (mod %d) = %d\n", x,a,p,y);
 	return 0;
 }
 
