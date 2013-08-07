@@ -44,11 +44,11 @@ int __attribute__((optimize("O0"))) main(int argc, char** argv)
 	uint32_t x = atoi(argv[1]);
 	uint32_t a = atoi(argv[2]);
 	uint32_t p = atoi(argv[3]);
-    uint32_t y;
+	uint32_t y;
 	for(int i = 0; i < 100000000; ++i) {
 		y = binary_exp_c(x,a,p);
 	}
-    printf("%d^%d (mod %d) = %d\n", x,a,p,y);
+	printf("%d^%d (mod %d) = %d\n", x,a,p,y);
 	return 0;
 }
 
