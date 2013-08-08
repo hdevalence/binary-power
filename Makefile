@@ -1,13 +1,20 @@
 CC=gcc
 CFLAGS=-O2 -std=c99
+EXTRA_FLAGS=
+CFLAGS+=$(EXTRA_FLAGS)
 
 power: power.c
 	$(CC) -o power power.c $(CFLAGS)
 
-ALL=power
+power-montgomery: power.c
+	$(CC) -o power-montgomery power.c $(CFLAGS) -DPOWER=montgomery_ladder
+
+ALL=power power-montgomery
 
 all: $(ALL)
 
-.PHONY: clean
+cortex-a15:
+	$(MAKE) all EXTRA_FLAGS=-mcpu=cortex-a15
+
 clean:
-	rm *.o $(ALL)
+	rm $(ALL)

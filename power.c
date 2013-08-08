@@ -22,6 +22,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifndef POWER
+#define POWER binary_exp_c
+#endif
+
+#define MUL_P(x,y,p) ((x*y) % p)
+
 /*
  * Compute x^a mod p. This is not guaranteed to be 
  * correct unless x, p < 2^16.
@@ -32,11 +38,42 @@ uint32_t binary_exp_c(uint32_t x, uint32_t a, uint32_t p)
 	uint32_t y = x;
 	while (a>1) {
 		if (a & 1)
-			r = (r*y) % p;
-		y = (y*y) % p;
+			r = MUL_P(r,y,p);
+		y = MUL_P(y,y,p);
 		a >>= 1;
 	}
-	return (r*y) % p;
+	return MUL_P(r,y,p);
+}
+
+/*
+ * Get the number of bits used by x.
+ * TODO: use clz instructions?
+ */
+int bits(uint32_t x)
+{
+	int k = 31;
+	while( !(x & (1 << k)) )
+        --k;
+	return k;
+}
+
+/*
+ * Compute x^a mod p. Again, we assume that x, p < 2^16.
+ */
+uint32_t montgomery_ladder(uint32_t x, uint32_t a, uint32_t p)
+{
+	uint32_t x1 = x;
+	uint32_t x2 = MUL_P(x,x,p);
+	for(int i = bits(a)-1; i >= 0; --i) {
+		if( a & (1 << i)) {
+			x1 = MUL_P(x1,x2,p);
+			x2 = MUL_P(x2,x2,p);
+		} else {
+			x2 = MUL_P(x1,x2,p);
+			x1 = MUL_P(x1,x1,p);
+		}
+	}
+	return x1;
 }
 
 int __attribute__((optimize("O0"))) main(int argc, char** argv)
@@ -46,9 +83,9 @@ int __attribute__((optimize("O0"))) main(int argc, char** argv)
 	uint32_t p = atoi(argv[3]);
 	uint32_t y;
 	for(int i = 0; i < 100000000; ++i) {
-		y = binary_exp_c(x,a,p);
+		y = POWER(x,a,p);
 	}
-	printf("%d^%d (mod %d) = %d\n", x,a,p,y);
+	//printf("%d^%d (mod %d) = %d\n", x,a,p,y);
 	return 0;
 }
 
