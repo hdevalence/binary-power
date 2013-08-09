@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <strings.h>
 
 #ifndef POWER
 #define POWER binary_exp_c
@@ -44,19 +45,6 @@ uint32_t binary_exp_c(uint32_t x, uint32_t a, uint32_t p)
 	}
 	return MUL_P(r,y,p);
 }
-
-/*
- * Get the number of bits used by x.
- * TODO: use clz instructions?
- */
-int bits(uint32_t x)
-{
-	int k = 31;
-	while( !(x & (1 << k)) )
-        --k;
-	return k;
-}
-
 /*
  * Compute x^a mod p. Again, we assume that x, p < 2^16.
  */
@@ -64,7 +52,8 @@ uint32_t montgomery_ladder(uint32_t x, uint32_t a, uint32_t p)
 {
 	uint32_t x1 = x;
 	uint32_t x2 = MUL_P(x,x,p);
-	for(int i = bits(a)-1; i >= 0; --i) {
+	int k = 31-__builtin_clz(a);
+	for(int i = k-1; i >= 0; --i) {
 		if( a & (1 << i)) {
 			x1 = MUL_P(x1,x2,p);
 			x2 = MUL_P(x2,x2,p);
